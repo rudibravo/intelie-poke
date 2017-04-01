@@ -1,0 +1,87 @@
+.App-logo {
+  margin-top: -20px;
+  margin-bottom: -30px;
+  height: 96px;
+}
+
+.App-header {
+  background-color: #222;
+  height: 100px;
+  padding: 20px;
+  color: white;
+  text-align: center;
+}
+
+.PokeDetails img {
+  width: 96px;
+  height: 96px;
+  border: 15px solid #3e2b14;
+  padding: 10px;
+}
+
+.PokeListItems { 
+  height: 440px;
+}
+
+.PokeList ul {
+  width:200px; 
+  padding:10px; 
+  margin:0; 
+  list-style: none;
+}
+
+.PokeList li a { 
+  color: #444;
+  text-decoration: none;
+}
+
+.PokePaginator {  
+  text-align: center; 
+  width: 200px;
+  bottom: 0px;
+}
+
+.PokePaginator a {
+  padding:.3em .5em;
+}
+
+.Content {
+  top: 140px;
+  text-align: center;
+}
+
+.PokeDetails {
+  width: 300px;
+  display: inline-block;
+  margin: 0 auto;
+  padding-top: 10px;
+  vertical-align: top;
+  text-align: left;
+}
+
+.PokeList {
+  font-size: large;  
+  height: 660px;
+  width: 250px;
+  display: inline-block;
+  margin: 0 auto;
+  vertical-align: top;
+  text-align: left;
+}
+
+.PokeDetailsTable {
+  display: table;
+  width: 280px;
+}
+
+.PokeDetailsRow {
+  display: table-row;
+}
+
+.PokeDetailsCell {
+  display: table-cell;
+}
+
+.PokeDetails h2 {
+  height: 40px;
+}

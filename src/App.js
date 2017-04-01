@@ -25,21 +25,55 @@ class PokePaginator extends Component {
     super(props)
     this.handleNext = this.handleNext.bind(this);
     this.handlePrevious = this.handlePrevious.bind(this);
+    this.handleClick = this.handleClick.bind(this);
   }
 
   handlePrevious(e) {
-    this.props.onPaginator(this.props.previous);
+    this.props.onPaginator(this.props.currentPage - 1);
   }
 
   handleNext(e) {
-    this.props.onPaginator(this.props.next);
+    this.props.onPaginator(this.props.currentPage + 1);
+  }
+
+  handleClick(number, e) {
+    this.props.onPaginator(number);
+  }
+
+  shouldRender(number, current, max) {
+    var result = number < 4 || number > max - 3 || Math.abs(number - current) < 2 || (number < 7 && current < 6) || (number > max - 6 && current > max - 5);
+    return result;
   }
 
   render() {
+
+    const pageNumbers = [];
+    for (let i = 1; i <= this.props.count; i++) {
+      pageNumbers.push(i);
+    }
+
+    const renderPageNumbers = pageNumbers.filter(number => {
+      return this.shouldRender(number, this.props.currentPage, this.props.count);
+    }).map(number => {
+      let itemClick = this.handleClick.bind(this, number);
+      return (
+        <li key={number} 
+          className={ this.props.currentPage === number ? 'active': '' }>
+          {(this.props.currentPage !== number) && this.props.clickable ? <a href="#" onClick={itemClick}>{number}</a> : <a>{number}</a>}
+        </li>
+      );
+    });
+
     return (
       <div className="PokePaginator">
-        {this.props.previous && this.props.clickable ? <a href="#" onClick={this.handlePrevious}> &lt;&lt; </a> : <a> &lt;&lt; </a>}
-        {this.props.next && this.props.clickable ? <a href="#" onClick={this.handleNext}> &gt;&gt; </a> : <a> &gt;&gt; </a>}
+        <nav>
+          <ul>
+            {(this.props.currentPage > 0) && this.props.clickable ? <li><a href="#" onClick={this.handlePrevious}>«</a></li>: <li><a>«</a></li>}
+            {renderPageNumbers}
+            {(this.props.currentPage < this.props.count) && this.props.clickable ? <li><a href="#" onClick={this.handleNext}>»</a></li> : <li><a>»</a></li>}
+          </ul>
+        </nav>
+        
       </div>
     )
   }
@@ -48,32 +82,9 @@ class PokePaginator extends Component {
 class PokeList extends Component {
   constructor(props) {
     super(props);
-    this.handlePaginator = this.handlePaginator.bind(this);
+    
     this.onPokemonSelected = this.onPokemonSelected.bind(this);
-    this.state = { data: [], url: 'http://pokeapi.co/api/v2/pokemon/', paginatorEnabled: false };
-  }
-
-  componentDidUpdate(prevProps, prevState){
-    if (prevState.url !== this.state.url) {
-      this.fetchData();  
-    }
-  }
-
-  fetchData() {
-    this.setState({paginatorEnabled: false})
-    fetch(this.state.url)
-      .then( response => response.json())
-      .then( json => {
-        this.setState({data: json.results, previous: json.previous, next: json.next, paginatorEnabled: true})
-      })
-  }
-
-  componentDidMount() {
-    this.fetchData();
-  }
-
-  handlePaginator(url) {
-    this.setState({url: url});
+    
   }
 
   onPokemonSelected(url) {
@@ -81,7 +92,7 @@ class PokeList extends Component {
   }
  
   render() {
-    const pokelist = this.state.data.map(p => 
+    const pokelist = this.props.data.map(p => 
       <PokeListItem key={p.name} value={p} onPokemonSelected={this.props.onPokemonSelected} />
     );
 
@@ -92,7 +103,6 @@ class PokeList extends Component {
             {pokelist}
           </ul>
         </div>
-        <PokePaginator clickable={this.state.paginatorEnabled} offset={this.state.offset} next={this.state.next} previous={this.state.previous} onPaginator={this.handlePaginator} />
       </div>
         
     )
@@ -147,11 +157,34 @@ class App extends Component {
   constructor(props) {
     super(props);
     this.onPokemonSelected = this.onPokemonSelected.bind(this);
-    this.state = { pokeUrl: null }
+    this.handlePaginator = this.handlePaginator.bind(this);
+    this.state = { pokeUrl: null, data: [], url: 'http://pokeapi.co/api/v2/pokemon/?offset=', currentPage: 1, paginatorEnabled: false };
+  }
+
+  fetchData() {
+    this.setState({paginatorEnabled: false})
+    fetch(this.state.url + ((this.state.currentPage-1)*20))
+      .then( response => response.json())
+      .then( json => {
+        this.setState({data: json.results, count: json.count, paginatorEnabled: true})
+      })
+  }
+
+   componentDidUpdate(prevProps, prevState){
+    if (prevState.currentPage !== this.state.currentPage) {
+      this.fetchData();  
+    }
+  }
+
+  componentDidMount() {
+    this.fetchData();
+  }
+
+  handlePaginator(offset) {
+    this.setState({currentPage: offset});
   }
 
   onPokemonSelected(url) {
-    console.log(">>> " + url);
     this.setState({pokeUrl: url});
   }
 
@@ -162,8 +195,9 @@ class App extends Component {
           <img src="poke.png" className="App-logo" alt="logo" />
           <h2>Pokepedia</h2>
         </div>
+        <PokePaginator count='40' currentPage={this.state.currentPage} onPaginator={this.handlePaginator} clickable={this.state.paginatorEnabled}/>
         <div className="Content">
-          <PokeList onPokemonSelected={this.onPokemonSelected} />
+          <PokeList onPokemonSelected={this.onPokemonSelected} data={this.state.data} />
           <PokeDetails url={this.state.pokeUrl} />
         </div>
       </div>
